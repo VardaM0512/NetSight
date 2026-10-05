@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NetSight</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0e1117; --panel: #161b22; --border: #273040;
+    --text: #e6edf3; --muted: #8b949e; --accent: #4f9dff;
+    --high: #f85149; --medium: #d29922; --low: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: "Segoe UI", system-ui, sans-serif; }
+  header { padding: 18px 28px; border-bottom: 1px solid var(--border);
+           display: flex; align-items: baseline; gap: 14px; }
+  header h1 { font-size: 20px; margin: 0; letter-spacing: 0.5px; }
+  header span { color: var(--muted); font-size: 13px; }
+  .wrap { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+           gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--panel); border: 1px solid var(--border);
+          border-radius: 10px; padding: 18px; }
+  .card .n { font-size: 30px; font-weight: 600; }
+  .card .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .panel { background: var(--panel); border: 1px solid var(--border);
+           border-radius: 10px; padding: 18px; }
+  .panel h2 { font-size: 14px; margin: 0 0 14px; color: var(--muted);
+              font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  td.sev { font-weight: 600; }
+  .high { color: var(--high); } .medium { color: var(--medium); } .low { color: var(--low); }
+  .bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .bar a { color: var(--accent); text-decoration: none; border: 1px solid var(--border);
+           padding: 8px 14px; border-radius: 8px; font-size: 13px; background: var(--panel); }
+  .bar a:hover { border-color: var(--accent); }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>NetSight</h1>
+  <span>Network Security Monitoring &amp; Forensics</span>
+</header>
+<div class="wrap">
+  <div class="cards">
+    <div class="card"><div class="n" id="c-packets">0</div><div class="l">Packets inspected</div></div>
+    <div class="card"><div class="n" id="c-alerts">0</div><div class="l">Alerts raised</div></div>
+    <div class="card"><div class="n high" id="c-high">0</div><div class="l">High severity</div></div>
+    <div class="card"><div class="n" id="c-types">0</div><div class="l">Threat types</div></div>
+  </div>
+
+  <div class="bar">
+    <a href="/export/report">Download incident report (CSV)</a>
+    <a href="/export/pcap">Download forensic PCAP</a>
+  </div>
+
+  <div class="grid">
+    <div class="panel"><h2>Alerts by category</h2><canvas id="catChart" height="220"></canvas></div>
+    <div class="panel"><h2>Alert timeline</h2><canvas id="timeChart" height="220"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>Recent alerts</h2>
+    <table>
+      <thead><tr><th>Time</th><th>Severity</th><th>Category</th><th>Source</th><th>Target</th><th>Detail</th></tr></thead>
+      <tbody id="alertRows"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const PALETTE = ["#4f9dff", "#f85149", "#d29922", "#3fb950", "#a371f7", "#db61a2", "#56d4dd"];
+
+function fmtTime(sec) {
+  const d = new Date(sec * 1000);
+  return d.toLocaleTimeString();
+}
+
+async function load() {
+  const stats = await (await fetch("/api/stats")).json();
+  const alerts = await (await fetch("/api/alerts")).json();
+
+  document.getElementById("c-packets").textContent = stats.total_packets;
+  document.getElementById("c-alerts").textContent = stats.total_alerts;
+  document.getElementById("c-high").textContent = stats.severities.high || 0;
+  document.getElementById("c-types").textContent = Object.keys(stats.categories).length;
+
+  const catLabels = Object.keys(stats.categories);
+  new Chart(document.getElementById("catChart"), {
+    type: "doughnut",
+    data: { labels: catLabels,
+      datasets: [{ data: catLabels.map(k => stats.categories[k]), backgroundColor: PALETTE }] },
+    options: { plugins: { legend: { labels: { color: "#e6edf3" } } } }
+  });
+
+  new Chart(document.getElementById("timeChart"), {
+    type: "line",
+    data: { labels: stats.timeline.map(p => fmtTime(p[0])),
+      datasets: [{ label: "Alerts", data: stats.timeline.map(p => p[1]),
+        borderColor: "#4f9dff", backgroundColor: "rgba(79,157,255,0.2)", fill: true, tension: 0.3 }] },
+    options: { scales: { x: { ticks: { color: "#8b949e" } }, y: { ticks: { color: "#8b949e" }, beginAtZero: true } },
+      plugins: { legend: { labels: { color: "#e6edf3" } } } }
+  });
+
+  const body = document.getElementById("alertRows");
+  body.innerHTML = alerts.map(a => `
+    <tr>
+      <td>${fmtTime(a.ts)}</td>
+      <td class="sev ${a.severity}">${a.severity.toUpperCase()}</td>
+      <td>${a.category}</td>
+      <td>${a.src || "-"}</td>
+      <td>${a.dst || "-"}</td>
+      <td>${a.description}</td>
+    </tr>`).join("");
+}
+
+load();
+</script>
+</body>
+</html>
