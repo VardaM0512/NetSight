@@ -231,5 +231,5 @@ detection alongside the rule engine.
 | Member | Contribution |
 |--------|-------------|
 | **Varda Murarka** | Detection engine, SQLite forensics, and Flask/Chart.js dashboard (core platform); testing and verification |
-| **Vishad Sharma** | Attacker VM setup, private network configuration, Suricata benchmarking, technical report sections |
-| **Gahna Bisht** | Victim VM and services, demo attack execution, architecture diagram, documentation |
+| **Gahna Bisht** | Victim VM and services, demo attack execution, evidence capture |
+| **Vishad Sharma** | Attacker VM setup, private network configuration, Suricata benchmarking |

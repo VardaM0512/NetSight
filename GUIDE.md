@@ -29,53 +29,40 @@ evidence, and shows everything on a web dashboard. Three pieces:
 | **Obj 2** — Detection engine | The Python code that detects attacks live | **Varda** (done) |
 | **Obj 3** — Forensics + dashboard + benchmarking | Database, web dashboard, PCAP export, Suricata comparison | **Varda** (dashboard/forensics, done) + **Vishad** (Suricata benchmark) |
 
-Report and diagram are split: **Gahna** writes the easy sections and draws the
-diagram, **Vishad** writes the technical sections.
-
 ---
 
 ## 2. Work division (who does what)
 
-### Varda — Detection engine + dashboard + forensics (core, already built)
+### Varda — Detection engine, forensics & dashboard
 
-This is the brain of the project and **it is already written and tested for
-you** — it's in this folder. Your job is to:
+Owns the core platform: the custom Python detection engine, the SQLite forensics
+layer, and the Flask/Chart.js dashboard.
 
-1. Understand it well enough to explain it (section 4 explains every detector).
-2. Run it on the lab and during the demo (section 5).
-3. Verify it works (section 7) — already proven to catch all attack types.
+1. Build and maintain the detection engine and dashboard (section 4).
+2. Run the platform on the lab and drive it during the demo (section 5).
+3. Test and verify all detections (section 7).
 
-### Gahna — easy mix (a little hands-on + easy writing)
+### Gahna — Victim environment & attack simulation
 
-A balance of light technical and documentation work — all of it copy-paste or
-guided, no networking theory and no Python.
+Owns the victim side of the testbed and the attack execution.
 
-1. **Install VirtualBox** (section 3 step B) — just an installer with defaults.
-2. **Build + set up the victim VM** (section 3 step C-victim and step D-victim):
-   install Ubuntu, then run two copy-paste commands to start the web server and
-   SSH server. Nothing to configure by hand.
-3. **Run the demo attacks** (section 6) by copy-pasting the ready-made commands
-   on the attacker VM while Varda's engine captures. No need to understand them.
-4. **Collect screenshots** of the dashboard, the alerts, and the downloaded
-   report.
-5. **Draw the architecture diagram** in draw.io (free, in-browser) using the
-   template in section 8.
-6. **Write the easy report sections** — Introduction, Objectives, and Tools
-   Used — mostly liftable from this guide and the synopsis.
+1. **Install VirtualBox** (section 3 step B).
+2. **Build and configure the victim VM** (section 3 step C-victim and
+   step D-victim): install Ubuntu and bring up the web and SSH services that the
+   system defends.
+3. **Execute the attack scenarios** (section 6) on the attacker VM during the
+   demo while the engine captures.
+4. **Capture the evidence** — screenshots of the dashboard, alerts, and reports.
 
-### Vishad — networking + benchmarking + technical writeup (moderate)
+### Vishad — Attacker environment, networking & benchmarking
 
-The parts that need a bit more thought.
+Owns the attacker side, the network fabric, and the comparative evaluation.
 
-1. **Build + configure the attacker VM (Kali)** (section 3 step C-attacker).
-2. **Set up the private network** (section 3 step D-network): put both VMs on
-   the same internal network, give each a static IP, and confirm they can ping
-   each other. This is the one genuinely fiddly step — it's yours.
-3. **Suricata benchmarking** (section 9) — install Suricata, run it on the same
-   `forensic.pcap` NetSight produces, and build the comparison table (what each
-   tool caught/missed). This is the "benchmarking" in your title.
-4. **Write the technical report sections** — Methodology, Detection Techniques
-   (lift from section 4), and Results & Benchmark Analysis (from section 9).
+1. **Build and configure the attacker VM (Kali)** (section 3 step C-attacker).
+2. **Configure the private network** (section 3 step D-network): place both VMs
+   on one internal network, assign static IPs, and verify connectivity.
+3. **Suricata benchmarking** (section 9) — run Suricata over the same
+   `forensic.pcap` and build the comparison table (what each tool caught/missed).
 
 ---
 
@@ -155,7 +142,7 @@ watch, and it's the one fiddly step.
 3. Test they can see each other — from Kali: `ping 10.0.0.10` should reply.
 
 **Victim services — Gahna.** Once Vishad confirms the ping works, start the
-services on the Ubuntu victim so there's something to attack (copy-paste):
+services on the Ubuntu victim so there's something to attack:
    ```
    sudo apt update
    sudo apt install -y apache2 openssh-server
@@ -248,8 +235,8 @@ Then open **http://127.0.0.1:5000** in a browser.
 
 ## 6. Attack commands for the demo (Gahna runs these on Kali)
 
-> Vishad sets up the Kali VM and networking; Gahna runs these copy-paste
-> commands during the demo while Varda's engine captures.
+> Vishad sets up the Kali VM and networking; Gahna runs these commands during
+> the demo while Varda's engine captures.
 
 Run these on the **attacker (Kali)** VM, against the victim `10.0.0.10`, while
 NetSight is capturing. These are standard tools that come pre-installed on
@@ -341,7 +328,7 @@ missed, drop `BRUTE_FORCE_THRESHOLD`.
 
 ---
 
-## 8. Architecture diagram (for Gahna to draw in draw.io)
+## 8. Architecture diagram (reference)
 
 Boxes and arrows:
 
@@ -371,10 +358,10 @@ This gives the "Suricata/Zeek benchmarking" part of the title.
    suricata -r forensic.pcap -l ./suricata-out
    ```
 3. Open `./suricata-out/fast.log` to see Suricata's alerts.
-4. **Compare in a small table** for the report: for each attack, did NetSight
-   catch it? Did Suricata? This is the benchmark. NetSight is lightweight and
-   custom; Suricata is a heavy industry tool — the point is to show your custom
-   engine catches the same core attacks.
+4. **Compare in a small table**: for each attack, did NetSight catch it? Did
+   Suricata? This is the benchmark. NetSight is lightweight and custom; Suricata
+   is a heavy industry tool — the point is to show your custom engine catches the
+   same core attacks.
 
 ---
 
@@ -384,10 +371,8 @@ This gives the "Suricata/Zeek benchmarking" part of the title.
 - [ ] Varda: `gen_test_traffic.py` + engine shows all 6 alert types (section 7)
 - [ ] Varda: dashboard opens and both downloads work
 - [ ] Gahna: VirtualBox installed + Ubuntu victim VM built
+- [ ] Gahna: Apache + SSH running on victim
+- [ ] Gahna: demo attacks run cleanly, screenshots collected
 - [ ] Vishad: Kali attacker VM built
 - [ ] Vishad: both VMs on `netsight-lab`, static IPs set, can ping each other
-- [ ] Gahna: Apache + SSH running on victim
-- [ ] Gahna: demo attacks run cleanly on Kali, screenshots collected
-- [ ] Gahna: architecture diagram drawn + Intro/Objectives/Tools report sections written
 - [ ] Vishad: Suricata benchmark table done
-- [ ] Vishad: Methodology/Detection/Results report sections written

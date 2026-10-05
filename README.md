@@ -122,9 +122,9 @@ For the full lab (attacker + victim VMs), see `GUIDE.md`.
 ## Installation
 
 ```bash
-# clone your repository
-git clone https://github.com/<your-username>/netsight.git
-cd netsight
+# clone the repository
+git clone https://github.com/VardaM0512/NetSight.git
+cd NetSight
 
 # install dependencies
 pip install -r requirements.txt
@@ -189,8 +189,8 @@ netsight/
 | Member | Role |
 |--------|------|
 | **Varda Murarka** | Detection engine, forensics, and dashboard (the core platform) |
-| **Vishad Sharma** | Attacker VM, network setup, Suricata benchmarking |
-| **Gahna Bisht** | Victim VM + services, demo attacks, diagram, documentation |
+| **Gahna Bisht** | Victim VM and services, attack simulation, evidence capture |
+| **Vishad Sharma** | Attacker VM, network configuration, Suricata benchmarking |
 
 Full step-by-step setup, the demo script, and the detailed work division are in
 **[GUIDE.md](GUIDE.md)**.
