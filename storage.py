@@ -1,5 +1,3 @@
-"""SQLite persistence for packet metadata and normalized alerts."""
-
 import sqlite3
 
 from scapy.layers.inet import IP, TCP, UDP, ICMP

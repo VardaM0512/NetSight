@@ -1,10 +1,3 @@
-"""Packet-level threat detectors for NetSight.
-
-Each detector exposes an inspect(pkt, ts) method that returns a list of
-Alert objects for the packet it was given. The engine feeds every packet
-through every detector in turn.
-"""
-
 import re
 import time
 from collections import defaultdict, deque

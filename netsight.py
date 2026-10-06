@@ -1,15 +1,3 @@
-"""NetSight capture engine.
-
-Usage:
-    python netsight.py capture --pcap test.pcap        analyse a saved capture
-    python netsight.py capture --iface "Ethernet"      capture live traffic
-    python netsight.py capture --pcap test.pcap --serve run, then open dashboard
-    python netsight.py dashboard                        serve the dashboard only
-
-Live capture needs Npcap on Windows (see the setup guide). Reading a .pcap
-file works without it.
-"""
-
 import argparse
 import sys
 import time
@@ -94,15 +82,15 @@ def main():
     parser = argparse.ArgumentParser(description="NetSight detection engine")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    cap = sub.add_parser("capture", help="analyse a pcap or capture live traffic")
-    cap.add_argument("--pcap", help="path to a .pcap/.pcapng file")
-    cap.add_argument("--iface", help="network interface name for live capture")
-    cap.add_argument("--db", default="netsight.db", help="SQLite database path")
-    cap.add_argument("--out-pcap", default="forensic.pcap", help="where to save flagged packets")
-    cap.add_argument("--serve", action="store_true", help="launch the dashboard after analysis")
-    cap.add_argument("--port", type=int, default=5000, help="dashboard port")
+    cap = sub.add_parser("capture")
+    cap.add_argument("--pcap")
+    cap.add_argument("--iface")
+    cap.add_argument("--db", default="netsight.db")
+    cap.add_argument("--out-pcap", default="forensic.pcap")
+    cap.add_argument("--serve", action="store_true")
+    cap.add_argument("--port", type=int, default=5000)
 
-    dash = sub.add_parser("dashboard", help="serve the dashboard for an existing database")
+    dash = sub.add_parser("dashboard")
     dash.add_argument("--db", default="netsight.db")
     dash.add_argument("--out-pcap", default="forensic.pcap")
     dash.add_argument("--port", type=int, default=5000)

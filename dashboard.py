@@ -1,5 +1,3 @@
-"""Flask dashboard that reads the NetSight database and serves the web UI."""
-
 import csv
 import io
 import os
